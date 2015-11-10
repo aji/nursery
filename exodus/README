@@ -1,0 +1,20 @@
+
+                                -- exodus --
+                        still leaning toward exodus.
+
+                             by Alex Iadicicco
+
+     exodus is a suite for inspecting Sega Genesis/Mega Drive ROMs. At
+     its core is a basic instruction decoder, which is provided as a
+     Python extension and command line program. On top of this is a GUI
+     for interactively disassembling sections of a ROM.
+
+     The use case is as follows: You just obtained a ROM image and you
+     want to tweak it to perfection. You load up the ROM in exodus-gui
+     where it is "disassembled" into many .word directives. You then
+     interactively mark certain words for disassembly into 68000 assembly
+     language. When you have determined the correct balance of code and
+     data, you export a linker script, Makefile, and assembly source,
+     make your tweaks, and feed them back into the GNU 68000 assembler
+     and linker to rebuild the ROM.
+

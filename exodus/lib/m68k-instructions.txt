@@ -1,0 +1,238 @@
+; m68k-instructions.txt - 68000 instruction decoder markup
+; Copyright (C) 2013 Alex Iadicicco
+;
+; Blank lines and lines with ';' in the first column are ignored. See
+; the end of the file for a description of the file format
+;
+; MOVEM omitted for being too complicated (TODO)
+
+; The ordering of instructions in this file is mostly arbitrary, but
+; it is done in such a way that potential conflicts are more obvious.
+; In general, more specific patterns should come first.
+;
+; Excluding the first section, patterns are basically sorted by the
+; first 4 bits, since these never contain any variable sections.
+
+
+0100111001110011 0	rte
+0100111001110101 0	rts
+0100111001110111 0	rtr
+
+0100111001110000 0	reset
+0100111001110010 1	stop	#@1
+
+0100111001110001 0	nop
+0100101011111100 0	illegal
+0100111001110110 0	trapv
+
+0000000000111100 1	ori.b	#@1	%ccr
+0000000001111100 1	ori.w	#@1	%sr
+0000001000111100 1	andi.b	#@1	%ccr
+0000001001111100 1	andi.w	#@1	%sr
+0000101000111100 1	eori.b	#@1	%ccr
+0000101001111100 1	eori.w	#@1	%sr
+
+0110000000000000 1	bra	#@1
+0110000011111111 2	bra	#@1
+01100000dddddddd 0	bra	#D
+0110000100000000 1	bsr	#@1
+0110000111111111 2	bsr	#@1
+01100001dddddddd 0	bsr	#D
+0110cccc00000000 1	bC	#@1
+0110cccc11111111 2	bC	#@1
+0110ccccdddddddd 0	bC	#D
+
+
+00000000sseeeeee 3	ori.S	#@1	<E>
+00000010sseeeeee 3	andi.S	#@1	<E>
+00000100sseeeeee 3	subi.S	#@1	<E>
+00000110sseeeeee 3	addi.S	#@1	<E>
+00001010sseeeeee 3	eori.S	#@1	<E>
+00001100sseeeeee 3	cmpi.S	#@1	<E>
+
+0000ddd100001aaa 1	movep.w	(@1,%aA)	%dD
+0000ddd101001aaa 1	movep.l	(@1,%aA)	%dD
+0000ddd110001aaa 1	movep.w	%dD	(@1,%aA)
+0000ddd111001aaa 1	movep.l	%dD	(@1,%aA)
+
+0000100000eeeeee 1	btst	#@1	<E>
+0000100001eeeeee 1	bchg.b	#@1	<E>
+0000100010eeeeee 1	bclr.b	#@1	<E>
+0000100011eeeeee 1	bset	#@1	<E>
+0000nnn100eeeeee 0	btst	%dN	<E>
+0000nnn101eeeeee 0	bchg.l	%dN	<E>
+0000nnn110eeeeee 0	bclr.l	%dN	<E>
+0000nnn111eeeeee 0	bset	%dN	<E>
+
+
+; MOVEA is dumb.
+; 0010nnn001eeeeee 0	movea.l	<E>	%aN
+; 0011nnn001eeeeee 0	movea.w	<E>	%aN
+
+0001ffffffeeeeee 0	move.b	<E>	<!F>
+0010ffffffeeeeee 0	move.l	<E>	<!F>
+0011ffffffeeeeee 0	move.w	<E>	<!F>
+
+
+0100100001000nnn 0	swap	%dN
+0100100010000nnn 0	ext.w	%dN
+0100100011000nnn 0	ext.l	%dN
+0100100111000nnn 0	extb.l	%dN
+0100111001010nnn 1	link	%aN	#@1
+0100111001011nnn 0	unlnk	%aN
+0100111001100nnn 0	move.l	%aN	%usp
+0100111001101nnn 0	move.l	%usp	%aN
+
+010011100100nnnn 0	trap	#N
+
+0100000011eeeeee 0	move.w	%sr	<E>
+0100001011eeeeee 0	move.w	%ccr	<E>
+0100010011eeeeee 0	move.w	<E>	%ccr
+0100011011eeeeee 0	move.w	<E>	%sr
+
+0100111011eeeeee 0	jmp	<E>
+0100111010eeeeee 0	jsr	<E>
+
+0100100000eeeeee 0	nbcd.b	<E>
+0100100001eeeeee 0	pea.l	<E>
+0100101011eeeeee 0	tas	<E>
+
+01000000sseeeeee 0	negx.S	<E>
+01000010sseeeeee 0	clr.S	<E>
+01000100sseeeeee 0	neg.S	<E>
+01000110sseeeeee 0	not.S	<E>
+01001010sseeeeee 0	tst.S	<E>
+
+0100nnn111eeeeee 0	lea.l	<E>	%aN
+0100nnn110eeeeee 0	chk.w	<E>	%dN
+0100nnn100eeeeee 0	chk.l	<E>	%dN
+
+
+0101cccc11111010 1	trapC.w	#@1
+0101cccc11111011 2	trapC.l	#@1
+0101cccc11111100 0	trapC
+
+0101cccc11001nnn 1	dbC	%dN	#@1
+0101cccc11eeeeee 0	sC	<E>
+
+0101ddd0sseeeeee 0	addq.S	#D	<E>
+0101ddd1sseeeeee 0	subq.S	#D	<E>
+
+
+0111nnn0dddddddd 0	moveq.l	#D	%dN
+
+
+1000nnn111eeeeee 0	divs.w	<E>	%dN
+1000nnn011eeeeee 0	divu.w	<E>	%dN
+
+1000xxx100000yyy 0	sbcd	%dY	%dX
+1000xxx100001yyy 0	sbcd	-(%aY)	-(%aX)
+
+1000nnn0sseeeeee 0	or.S	<E>	%dN
+1000nnn1sseeeeee 0	or.S	%dN	<E>
+
+
+1001nnn011eeeeee 0	suba.w	<E>	%aN
+1001nnn111eeeeee 0	suba.l	<E>	%aN
+1001yyy1ss000xxx 0	subx.S	%dX	%dY
+1001yyy1ss001xxx 0	subx.S	-(%aX)	-(%aY)
+1001nnn0sseeeeee 0	sub.S	<E>	%dN
+1001nnn1sseeeeee 0	sub.S	%dN	<E>
+
+
+1011nnn0sseeeeee 0	cmp.S	<E>	%dN
+1011nnn011eeeeee 0	cmpa.w	<E>	%aN
+1011nnn111eeeeee 0	cmpa.l	<E>	%aN
+1011xxx1ss001yyy 0	cmpm.S	(%aY)+	(%aX)+
+
+1011nnn1sseeeeee 0	eor.S	%dN	<E>
+
+
+1100xxx100000yyy 0	abcd	%dY	%dX
+1100xxx100001yyy 0	abcd	-(%aY)	-(%aX)
+
+1100xxx101000yyy 0	exg.l	%dX	%dY
+1100xxx101001yyy 0	exg.l	%aX	%aY
+1100xxx110001yyy 0	exg.l	%dX	%aY
+
+1100nnn011eeeeee 0	mulu.w	<E>	%dN
+1100nnn111eeeeee 0	muls.w	<E>	%dN
+
+1100nnn0sseeeeee 0	and.S	<E>	%dN
+1100nnn1sseeeeee 0	and.S	%dN	<E>
+
+
+1101nnn011eeeeee 0	adda.w	<E>	%aN
+1101nnn111eeeeee 0	adda.l	<E>	%aN
+1101xxx1ss000yyy 0	addx.S	%dY	%dX
+1101xxx1ss001yyy 0	addx.S	-(%aY)	-(%aX)
+1101nnn0sseeeeee 0	add.S	<E>	%dN
+1101nnn1sseeeeee 0	add.S	%dN	<E>
+
+
+1110000011eeeeee 0	asr.w	<E>
+1110000111eeeeee 0	asl.w	<E>
+
+1110001011eeeeee 0	lsr.w	<E>
+1110001111eeeeee 0	lsl.w	<E>
+
+1110011011eeeeee 0	ror.w	<E>
+1110011111eeeeee 0	rol.w	<E>
+
+1110010011eeeeee 0	roxr.w	<E>
+1110010111eeeeee 0	roxl.w	<E>
+
+1110xxx0ss000yyy 0	asr.S	#X	%dY
+1110xxx0ss100yyy 0	asr.S	%dX	%dY
+1110xxx1ss000yyy 0	asl.S	#X	%dY
+1110xxx1ss100yyy 0	asl.S	%dX	%dY
+
+1110xxx0ss001yyy 0	lsr.S	#X	%dY
+1110xxx0ss101yyy 0	lsr.S	%dX	%dY
+1110xxx1ss001yyy 0	lsl.S	#X	%dY
+1110xxx1ss101yyy 0	lsl.S	%dX	%dY
+
+1110xxx0ss011yyy 0	ror.S	#X	%dY
+1110xxx0ss111yyy 0	ror.S	%dX	%dY
+1110xxx1ss011yyy 0	rol.S	#X	%dY
+1110xxx1ss111yyy 0	rol.S	%dX	%dY
+
+1110xxx0ss010yyy 0	roxr.S	#X	%dY
+1110xxx0ss110yyy 0	roxr.S	%dX	%dY
+1110xxx1ss010yyy 0	roxl.S	#X	%dY
+1110xxx1ss110yyy 0	roxl.S	%dX	%dY
+
+
+; There are five columns. All columns are separated with whitespace.
+;
+;  00000110sseeeeee 1     addi.S    #@1      <E>
+;    |              |       |        |        |
+;   instruction     |    opcode      |     second operand
+;         immediate flags         first operand
+;
+; The instruction field is a 16 bit pattern that instructions of this
+; type match. Fields can be marked with letters, whose shifted values
+; can later be used in the following fields.
+;
+; The immediate flags field is a hex nibble whose bits represent 4 values:
+;   d = 1101
+;       ||||
+;       ||``- size of first immediate, in words
+;       ``--- size of second immediate, in words
+; If either value is 11, it means the size of the immediate value is
+; determined by the bits marked S in the instruction map using the standard
+; 68k sizes (00 = byte, 01 = word, 10 = long)
+;
+; The opcode field specifies the text name of the opcode. Capital letters
+; are expanded into full opcode names. If before a ., the value is
+; interpreted as a condition code. If after a ., the value is interpreted
+; as a size (00 = byte, 01 = word, 10 = long)
+;
+; The first and second operand fields are optional. Capital letters are
+; replaced with their value in the instruction map. @1 and @2 are replaced
+; with the first and second immediate value, respectively. <X> is replaced
+; with the interpretation of the bits in X as an effective address. <!X> is
+; replaced with the interpretation of the bits in X as a reverse effective
+; address, e.g. in the MOVE instruction.
+;
+; Patterns are tried one at a time from top to bottom.

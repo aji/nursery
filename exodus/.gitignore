@@ -1,0 +1,11 @@
+*.swp
+*.o
+exodus-cli
+m68k-decode.h
+m68k-decode.c
+a.out
+test
+test.o
+build/
+*.so
+__pycache__/
