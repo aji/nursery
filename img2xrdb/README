@@ -1,0 +1,33 @@
+A lot of people like to customize their .Xresources file and get all
+sorts of pretty colors for their terminals.
+
+I am one of those people.
+
+I used to pick colors by creating a small 8x2 image in the GIMP, selecting
+each pixel with the eye dropper, and manually copying the hex values
+into my .Xresources file. Needless to say, this was very tedious work,
+and made the process of picking colors very cumbersome. The focus became
+the copying process and not the colors themselves.
+
+So I wrote this script to take an image like the ones I had been creating
+and turn it into a set of color values suitable for an .Xresources
+file. It can also take a preamble and stick it on the top of the output
+(if you don't want to do that with cat). Unfortunately, that's about
+all it does right now.
+
+It requires the Python Imaging Library. I've been trying to write Python
+3 code, but my system only had PIL for Python 2. The script's shebang is
+"#!/usr/bin/env python2" because the Python 2 installation on my system
+is called "python2". Chances are yours is just "python", so if the OS
+can't find a suitable interpreter, try changing this to just "python".
+
+I've included the .png containing the colors I currently use in my
+.Xresources as an example of how the colors are laid out in the image.
+
+The script is less than 100 lines, so I'm not putting any sort of license
+on it. Copy, modify, and distribute it as you wish. The same goes for all
+the other files included in this project. They took me like 20 minutes,
+so I don't really care enough. Of course, this also means that you're on
+your own when it comes to errors and things. I'm assuming you're capable
+enough to handle them yourself.
+

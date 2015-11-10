@@ -1,0 +1,9 @@
+URxvt*termName: xterm-color
+URxvt*font: xft:Terminus:pixelsize=12
+URxvt*scrollBar: false
+URxvt*cursorColor: #ff0000
+
+URxvt*foreground: 7
+URxvt*background: 0
+URxvt*colorBD: 15
+

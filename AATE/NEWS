@@ -1,0 +1,34 @@
+Below is a list of major changes from version to version:
+
+AATE v0.4:
+    * Created a new class in sdl, colorview, which supports color rendering
+    * Added colors to logger
+    * shell.py now starts /bin/bash instead of /bin/sh
+    * echolog.py now demonstrates colors
+
+AATE v0.3.1:
+    * Added a logcons module which allows for readline-like line editing and
+      command history, and a custom log/console command line.
+    * Fixed a couple bugs here and there
+    * Added an "echolog" script in tests which demonstrates the new logcons
+      module's capabilities.
+
+AATE v0.3:
+    * Can now support most VT102 escape sequences with limited style support
+      (underline and "inverse" video mode)
+    * Test shell program packaged along with.
+    * Ignores most unknown commands, cleaning up the display.
+    * Abstracted control sequences to a "control" class
+    * Removed the "sanitize" function added in v0.2
+
+AATE v0.2:
+    * Created an sdl module which provides an interface to pygame
+    * The terminal class treats carriage returns and backspace characters
+      appropriately
+    * Added a "sanitize" function to term which fixes up strings containing
+      control sequences
+
+AATE v0.1:
+    * Created a simple terminal class which can facilitate basic input and
+      output.
+    * The terminal class can handle most ANSI/VT100 escape sequences.
