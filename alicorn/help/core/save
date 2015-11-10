@@ -1,0 +1,8 @@
+Usage: SAVE <dbfile>
+
+Saves the internal database to the specified
+file. If the argument is missing, it defaults
+to var/alicorn.db. Note that the database is
+automatically saved at certain intervals and at
+exit, so this is unnecessary unless certain key
+changes have been made.

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html><head>
+
+<title>IR Documentation</title>
+
+<style>
+html {
+  margin: 0;
+  padding: 20px;
+  border-width: 0 50px;
+  border-color: #eee;
+  border-style: solid;
+  font-family: sans-serif;
+  line-height: 150%;
+  }
+body {
+  max-width: 700px;
+  margin: 0 auto;
+  }
+.title {
+  margin: 1em auto 1em;
+  display: inline-block;
+  font-size: 32pt;
+  font-weight: bold;
+  line-height: 100%;
+  }
+h1 {
+  border-bottom: 2px solid black;
+  padding-bottom: 0.25em;
+  margin: 2em 0 1em;
+  }
+.definition h3 {
+  border-bottom: 1px dotted black;
+  padding-bottom: 0.25em;
+  margin: 2em 0 1em;
+  }
+.params span, .operands span {
+  font-weight: bold;
+  }
+.operands {
+  margin-bottom: 0.5em;
+  }
+code {
+  border: 1px solid #ddd;
+  background-color: #efefef;
+  padding: 1px;
+  border-radius: 3px;
+  }
+.operators tbody td {
+  border-top: 1px dotted black;
+  padding: 0.5em;
+  }
+.operators th {
+  text-align: left;
+  padding: 1.0em;
+  }
+.operators td:first-child,
+.operators th:first-child {
+  text-align: right;
+  }
+.note {
+  color: #800;
+  }
+</style>
+
+</head><body>
+
+<div class="title">Intermediate Representation Documentation</div>
+
+<h1>Overview</h1>
+
+<p>The intermediate representation (IR) used in this project is a derivative
+  of 3 address code. At the highest level it is a control flow graph (CFG)
+  of basic blocks (BB).</p>
+
+<p>Within each basic block is a list of instructions (<code>inst_t</code>).
+  Instructions may have 0 or more operands (<code>inst_op_t</code>). An
+  <code>inst_op_t</code> holds either a constant integer value or an
+  identifier. An <code>inst_op_t</code> with an identifier functions as
+  locationless storage of an integer value. Other IRs might refer to these as
+  "named registers".</p>
+
+<p><span class="note">Note: Some <code>inst_t</code> configurations are
+  illegal, such as attempting to assign to a literal integer value.</span></p>
+
+<p>The only type used in the IR is a vague "integer" type. Every language
+  feature is broken down to fit these "integers". Integers are expected
+  to hold a (possibly negative) integer value, and should be able to
+  be stored in integer-addressed memory of integer values. Integers!!!</p>
+
+<h1>Instructions</h1>
+
+<p>The following is a listing of instructions used in the IR. The difference
+  between a parameter and an operand is that an operand is explicitly an
+  inst_op_t and follows all the rules of such.</p>
+
+<div class="instruction definition">
+  <h3>I_ASSIGN</h3>
+  <div class="params"><span>Parameters:</span>
+    <code>a.op</code>
+    <code>a.t</code></div>
+  <div class="operands"><span>Operands:</span>
+    <code>a.l</code>
+    <code>a.r[0]</code>
+    <code>a.r[1]</code></div>
+  Combines the values in <code>a.r[0]</code> and <code>a.r[1]</code> according
+  to the operation described by <code>a.op.</code> The actual values of
+  <code>a.op</code> are described in the later OPERATORS section. The result
+  of the computation is stored in <code>a.l</code>. <span class="note">Note:
+  <code>a.l</code> must be an identifier, and that <code>a.r[1]</code>
+  may be unused.</span>
+</div>
+
+<div class="instruction definition">
+  <h3>I_IF</h3>
+  <div class="params"><span>Parameters:</span>
+    (none)</div>
+  <div class="operands"><span>Operands:</span>
+    <code>cond</code></div>
+  Tests <code>cond</code> for a non-zero value. The result is stored in an
+  implicit comparison register, and is used to determine whether the true
+  or false branch of the BB should be taken. <span class="note">Note:
+  <code>I_IF</code> may only occur at the end of a BB.</span></p>
+</div>
+
+<div class="instruction definition">
+  <h3>I_ATTRIBUTE</h3>
+  <div class="params"><span>Parameters:</span>
+    <code>a.r[1].id</code>
+    <code>a.t</code></div>
+  <div class="operands"><span>Operands:</span>
+    <code>a.l</code>,
+    <code>a.r[0]</code></div>
+  Interprets <code>a.r[0]</code> as the address of something with attributes.
+  Computes the address of the attribute named by <code>a.r[1].id</code>
+  in type <code>a.t</code> and stores it in <code>a.l</code>. An
+  <code>I_ATTRIBUTE</code> with <code>a.r[1].id</code> "foo", <code>a.l</code>
+  "y", and <code>a.r[0]</code> "x", would be equivalent to the C statement
+  <code>y = &amp;x-&gt;foo</code>. In other words, <code>a.l</code> holds
+  the address of the field itself. This allows <code>I_ATTRIBUTE</code>
+  to be used both for loading and storing field values.</p>
+</div>
+
+<div class="instruction definition">
+<h3>I_LOAD</h3>
+  <div class="params"><span>Parameters:</span>
+    (none)</div>
+  <div class="operands"><span>Operands:</span>
+    <code>m.dst</code>,
+    <code>m.src</code></div>
+  Interprets <code>m.src</code> as a memory location. The integer value
+  stored at this location is loaded into <code>m.dst.</code>
+</div>
+
+<div class="instruction definition">
+<h3>I_STORE</h3>
+  <div class="params"><span>Parameters:</span>
+    (none)</div>
+  <div class="operands"><span>Operands:</span>
+    <code>m.dst</code>,
+    <code>m.src</code></div>
+  Interprets <code>m.dst</code> as a memory location. The value of
+  <code>m.src</code> is stored at this location.
+</div>
+
+<div class="instruction definition">
+<h3>I_CALL</h3>
+  <div class="params"><span>Parameters:</span>
+    <code>c.f</code></div>
+  <div class="operands"><span>Operands:</span>
+    <code>c.args</code>&hellip;,
+    <code>c.ret</code></div>
+  Calls the given function, passing in the arguments. All arguments are
+  pass-by-value. (Pass-by-reference is a language feature implemented by the
+  IR generator in terms of this pass-by-value and implicit <code>I_LOAD</code>
+  and <code>I_STORE</code>). The first argument is assigned to the implicit
+  <code>this</code> symbol, and the remaining arguments are assigned left
+  to right to the formal parameters of the function. The return value of
+  the call is stored in <code>c.ret</code>, unless <code>c.ret</code> is a
+  constant integer value, in which case the return value is discarded.
+</div>
+
+<div class="instruction definition">
+<h3>I_ALLOC</h3>
+  <div class="params"><span>Parameters:</span>
+    <code>alloc.t</code></div>
+  <div class="operands"><span>Operands:</span>
+    <code>alloc.dst</code></div>
+  Allocates space somewhere for a variable of the given type. The address
+  of the allocated space is stored in <code>alloc.dst</code>.
+</div>
+
+<h1>Operators</h1>
+
+<p>The I_ASSIGN instruction makes use of the a.op parameter to define the
+actual operation that occurs. The following is a listing of possible values
+for <code>a.op</code>, and how they are to be interpreted. All operators
+are binary operators unless otherwise specified.</p>
+
+<table class="operators">
+  <thead>
+    <tr><th>Operator</th><th>Operation</th></tr>
+  </thead>
+
+  <tbody>
+    <tr>
+    <td><code>OP_IDENTIFIER</code> / <code>OP_INTEGER_CONSTANT</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code>. <span class="note">Note:
+      This may be replaced by just a single <code>OP_IDENTIFIER</code>,
+      <code>OP_INTEGER_CONSTANT</code>, or maybe even an
+      <code>OP_NULL</code>. Having two <code>a.op</code> values doing the
+      same logical operation is just silly.</span></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_INDEX</code></td>
+    <td>Interprets <code>r[0]</code> as the address of the first element of
+      an array of <code>t</code>, and computes the address of the element
+      indexed by <code>r[1]</code>. The computed address is stored in
+      <code>l</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_EQ</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> = <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_NE</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> &ne; <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_LT</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> &lt; <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_GT</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> &gt; <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_LE</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> &le; <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_GE</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> &ge; <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_ADD</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> + <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_SUB</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> - <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_OR</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> or <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_MUL</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> &times; <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_DIV</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> &divide; <code>r[1]</code></td>
+    </tr>
+
+    <tr>
+    <td><code>OP_MOD</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> mod <code>r[1]</code>)</td>
+    </tr>
+
+    <tr>
+    <td><code>OP_AND</code></td>
+    <td><code>l</code> &larr; <code>r[0]</code> and <code>r[1]</code></td>
+    </tr>
+
+  </tbody>
+</table>
+
+</body></html>

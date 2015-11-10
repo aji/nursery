@@ -1,0 +1,5 @@
+*.o
+foobot
+loader
+test.*
+core*

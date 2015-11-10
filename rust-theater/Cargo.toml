@@ -1,0 +1,12 @@
+[package]
+name = "theater"
+version = "0.1.1"
+description = "An (UNFINISHED) implementation of the actor concurrency model"
+repository = "https://github.com/aji/rust-theater"
+keywords = ["actor", "concurrency"]
+authors = ["Alex Iadicicco <alex@ajitek.net>"]
+readme = "README.md"
+license = "MIT"
+
+[dependencies]
+rustc-serialize = "*"

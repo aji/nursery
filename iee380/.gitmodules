@@ -1,0 +1,90 @@
+[submodule "projects/atheme"]
+	path = projects/atheme
+	url = https://github.com/atheme/atheme.git
+[submodule "projects/gimp"]
+	path = projects/gimp
+	url = https://git.gnome.org/browse/gimp
+[submodule "projects/linux"]
+	path = projects/linux
+	url = https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git
+[submodule "projects/perl"]
+	path = projects/perl
+	url = http://perl5.git.perl.org/perl.git
+[submodule "projects/FFmpeg"]
+	path = projects/FFmpeg
+	url = https://github.com/FFmpeg/FFmpeg.git
+[submodule "projects/gcc"]
+	path = projects/gcc
+	url = git://gcc.gnu.org/git/gcc.git
+[submodule "projects/json-c"]
+	path = projects/json-c
+	url = https://github.com/json-c/json-c.git
+[submodule "projects/bahamut"]
+	path = projects/bahamut
+	url = https://github.com/epiphani/bahamut.git
+[submodule "projects/libevent"]
+	path = projects/libevent
+	url = https://github.com/libevent/libevent.git
+[submodule "projects/mongo-c-driver"]
+	path = projects/mongo-c-driver
+	url = https://github.com/mongodb/mongo-c-driver.git
+[submodule "projects/pkgconf"]
+	path = projects/pkgconf
+	url = https://github.com/pkgconf/pkgconf.git
+[submodule "projects/glibc"]
+	path = projects/glibc
+	url = git://sourceware.org/git/glibc.git
+[submodule "projects/Cinnamon"]
+	path = projects/Cinnamon
+	url = https://github.com/linuxmint/Cinnamon
+[submodule "projects/zfs"]
+	path = projects/zfs
+	url = https://github.com/zfsonlinux/zfs
+[submodule "projects/redis"]
+	path = projects/redis
+	url = https://github.com/antirez/redis
+[submodule "projects/git"]
+	path = projects/git
+	url = https://github.com/git/git
+[submodule "projects/pianobar"]
+	path = projects/pianobar
+	url = https://github.com/doctaweeks/pianobar
+[submodule "projects/SFML"]
+	path = projects/SFML
+	url = https://github.com/PhilLapineau/SFML
+[submodule "projects/ardupilot"]
+	path = projects/ardupilot
+	url = https://github.com/andybarry/ardupilot
+[submodule "projects/trinity"]
+	path = projects/trinity
+	url = https://github.com/kernelslacker/trinity
+[submodule "projects/JohnTheRipper"]
+	path = projects/JohnTheRipper
+	url = https://github.com/magnumripper/JohnTheRipper
+[submodule "projects/appweb-4"]
+	path = projects/appweb-4
+	url = https://github.com/embedthis/appweb-4
+[submodule "projects/openwrt"]
+	path = projects/openwrt
+	url = https://github.com/battlemesh/openwrt
+[submodule "projects/cgminer"]
+	path = projects/cgminer
+	url = https://github.com/minux/cgminer
+[submodule "projects/Arduino"]
+	path = projects/Arduino
+	url = https://github.com/arduino/Arduino
+[submodule "projects/funk2"]
+	path = projects/funk2
+	url = https://github.com/bunuelo/funk2
+[submodule "projects/freebsd"]
+	path = projects/freebsd
+	url = https://github.com/freebsd/freebsd
+[submodule "projects/libxmp"]
+	path = projects/libxmp
+	url = https://github.com/cmatsuoka/libxmp
+[submodule "projects/simh"]
+	path = projects/simh
+	url = https://github.com/simh/simh
+[submodule "projects/xbmc"]
+	path = projects/xbmc
+	url = https://github.com/xbmc/xbmc

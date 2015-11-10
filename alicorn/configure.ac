@@ -1,0 +1,25 @@
+AC_INIT([Alicorn], [0.0.1-alpha1], [https://github.com/aji/alicorn])
+
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+
+AC_CHECK_FUNCS([memset])
+AC_CHECK_FUNCS([strerror])
+AC_CHECK_HEADER_STDBOOL
+
+AC_FUNC_FORK
+AC_TYPE_SIZE_T
+
+PKG_CHECK_MODULES([libunicorn], [libunicorn])
+
+BUILDSYS_SHARED_LIB
+BUILDSYS_PROG_IMPLIB
+
+BUILDSYS_INIT
+BUILDSYS_TOUCH_DEPS
+
+AC_CONFIG_FILES([buildsys.mk extra.mk src/autoconf.h])
+
+AC_OUTPUT

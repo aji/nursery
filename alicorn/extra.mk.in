@@ -1,0 +1,2 @@
+libunicorn_LIBS = @libunicorn_LIBS@
+libunicorn_CFLAGS = @libunicorn_CFLAGS@

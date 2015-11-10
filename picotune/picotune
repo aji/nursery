@@ -1,0 +1,24 @@
+#!/usr/bin/python
+
+import sys
+from subprocess import Popen, PIPE
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print('missing an arg, bro')
+        sys.exit(1)
+    def S(a, v):
+        globals()[a] = v
+        return v
+    s = sys.argv[1]
+    f = eval('lambda t: ' + s)
+    aplay = Popen(['/usr/bin/aplay']+sys.argv[2:], stdin=PIPE)
+    t = 0
+    while True:
+        l = []
+        for x in range(128):
+            l.append(int(f(t)) % 256)
+            t += 1
+        aplay.stdin.write(bytearray(l))
+    aplay.kill()
+    aplay.wait()

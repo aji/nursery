@@ -1,0 +1,5 @@
+tools/
+test.gp
+*.o
+*~
+*.swp

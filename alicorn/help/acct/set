@@ -1,0 +1,3 @@
+Usage: ACCT SET <name> <property>
+
+Sets properties on accounts.

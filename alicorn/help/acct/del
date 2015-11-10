@@ -1,0 +1,4 @@
+Usage: ACCT DEL <name>
+
+Deletes the named account. Note that the account
+cannot be in use.

@@ -1,0 +1,3 @@
+[submodule "buildsys"]
+	path = buildsys
+	url = git://github.com/atheme/buildsys.git

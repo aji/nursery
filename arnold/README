@@ -1,0 +1,77 @@
+
+INTRODUCTION
+
+  arnold is a shell script that takes care of configuring your
+  ~/.minecraft directory. It currently only focuses on the mods/,
+  coremods/ config/, and saves/ directory. It can also add jar mods,
+  though for most sane setups this should only be forge and one or two
+  other mods (optifine, zombe, etc.)
+  
+
+PROFILES
+
+  arnold is built around "profiles." Profiles go in the "profiles" directory
+  in the Minecraft directory, which will be ~/.minecraft/profiles for most
+  people. A profile is a directory that contains a file called "profile"
+  and optionally a config/ and saves/ directory. The "profile" file is
+  really just a shell script that is sourced by arnold. arnold provides
+  a few functions intended to be used in these profiles:
+  
+    {debug,info,warn,error} MESSAGE
+        Prints a message
+  
+    die MESSAGE
+        Prints a message and exits
+  
+    forgemod MOD
+        Creates a symlink in ~/.minecraft/mods
+
+    coremod MOD
+        Creates a symlink in ~/.minecraft/coremods
+  
+    jarmod MOD
+        Extracts the specified mod into minecraft.jar
+  
+    import PROFILE
+        Sources the profile script from a different profile.
+  
+    useconfig PROFILE
+        Use the config/ dir in the specified profile. By default, the
+        config/ dir in the "default" profile is used.
+  
+    usesaves PROFILE
+        Use the saves/ dir in the specified profile. By default, the saves/
+        dir in the profile being launched is chosen.
+
+
+WARNING
+
+  I did a bad job explaining everything above. As explained in the
+  license below, if you screw up your Minecraft installation, you only
+  have yourself to blame. I HIGHLY RECOMMEND that you first read through
+  the script itself. If you still have questions, then you may contact aji
+  on EsperNet, but ONLY AFTER HAVING TRIED TO FIND THE ANSWER YOURSELF.
+
+
+LICENSE
+
+  Copyright (C) 2012 Alex Iadicicco
+
+  Permission is hereby granted, free of charge, to any person obtaining
+  a copy of this software and associated documentation files (the
+  "Software"), to deal in the Software without restriction, including
+  without limitation the rights to use, copy, modify, merge, publish,
+  distribute, sublicense, and/or sell copies of the Software, and to
+  permit persons to whom the Software is furnished to do so, subject to
+  the following conditions:
+
+  The above copyright notice and this permission notice shall be included
+  in all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
+  KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+  WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE

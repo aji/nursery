@@ -1,0 +1,20 @@
+
+                                 mat447
+                             Alex Iadicicco
+
+
+  This is Alex Iadicico's framework for examining the running time of
+  prime factorization algorithms writen with PARI.
+
+  This code was created for the MAT 447 Fall 2012 honors contract as
+  part of a survey of a few simple integer factorization algorithms. This
+  suite is designed to generate accurate data about the running time of
+  these algorithms.
+
+  The numbers being factored are of the form N = pq, where p and q are
+  large primes of roughly the same size. These types of numbers are of
+  special importance to the cryptography community. The RSA cryptosystem
+  derives its security from the difficulty of factoring numbers of
+  this type.
+
+  This code is provided as-is, without support or warranty.

@@ -1,0 +1,7 @@
+Usage: ACCT <command...>
+
+This command allows management of user
+accounts. By itself it is just a trampoline for
+other more specific commands. Use ACCT HELP or
+ACCT HELP <command> for more information on what
+commands are available.

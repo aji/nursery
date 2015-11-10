@@ -1,0 +1,2 @@
+#!/bin/sh
+build/$1 csv/$1.csv 30 15 #2>/dev/null

@@ -1,0 +1,5 @@
+View help about commands. Using just HELP
+without any arguments will print a list of all
+available commands for the current context,
+and using HELP with an argument will print an
+extended HELP message for the indicated command.

@@ -1,0 +1,7 @@
+*.swp
+*~
+*.pyc
+config/secret.cfg
+env_dev/
+env_prod/
+var/

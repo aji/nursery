@@ -1,0 +1,62 @@
+<ex-p> := tID
+<ex-p> := tINT
+<ex-p> := tLPAR <expr> tRPAR
+<ex-p> := tLBRACK <expr> tRBRACK
+
+<ex-fn> := <ex-p> <ex-fn'>
+<ex-fn'> := tLPAR <ex-fn-args> tRPAR | \e
+<ex-fn-args> := <expr> <ex-fn-args> | \e
+
+<ex-mul> := <ex-fn> <ex-mul'>
+<ex-mul'> := tMUL <ex-mul>
+<ex-mul'> := tDIV <ex-mul>
+<ex-mul'> := tMOD <ex-mul>
+<ex-mul'> := \e
+
+<ex-add> := <ex-mul> <ex-add'>
+<ex-add'> := tADD <ex-add>
+<ex-add'> := tSUB <ex-add>
+<ex-add'> := \e
+
+<ex-shift> := <ex-add> <ex-shift'>
+<ex-shift'> := tLSH <ex-shift>
+<ex-shift'> := tRSH <ex-shift>
+<ex-shift'> := \e
+
+<ex-bin> := <ex-shift> <ex-bin'>
+<ex-bin'> := tAND <ex-bin>
+<ex-bin'> := tOR  <ex-bin>
+<ex-bin'> := tXOR <ex-bin>
+<ex-bin'> := \e
+
+<ex-cmp> := <ex-bin> <ex-cmp'>
+<ex-cmp'> := tEQ <ex-cmp>
+<ex-cmp'> := tNE <ex-cmp>
+<ex-cmp'> := tGT <ex-cmp>
+<ex-cmp'> := tLT <ex-cmp>
+<ex-cmp'> := tLE <ex-cmp>
+<ex-cmp'> := tGE <ex-cmp>
+<ex-cmp'> := \e
+
+<ex-land> := <ex-cmp> <ex-land'>
+
+<ex-tern> := <ex-cmp> <ex-tern'>
+<ex-tern'> := tQUES <ex-cmp> tCOLON <ex-cmp>
+<ex-tern'> := \e
+
+<ex-comma> := <ex-tern> <ex-comma'>
+<ex-comma'> := tCOMMA <ex-comma>
+<ex-comma'> := \e
+
+<expr> := <ex-comma>
+
+<fn-decl> := tFN <fn-name> <fn-def>
+<fn-name> := tID
+<fn-name> := \e
+<fn-def> := tLPAR <arg-list> tRPAR <expr>
+<arg-list> := tID <arg-list> | \e
+
+<decl> := <fn-decl>
+<decls> := <decl> <decls> | \e
+
+<program> := <decls>

@@ -1,0 +1,12 @@
+[package]
+name = "asm68k"
+version = "0.0.1"
+authors = ["Alex Iadicicco <alex@ajitek.net>"]
+
+[[bin]]
+name = "asm68k"
+path = "src/bin/asm68k.rs"
+doc = false
+
+[dependencies.elftools]
+git = "https://github.com/gx-sdk/elftools.git"

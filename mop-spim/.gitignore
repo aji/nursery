@@ -1,0 +1,11 @@
+src/y.tab.h
+src/lex.yy.c
+src/pascal.tab.h
+src/pascal.tab.c
+src/pascal.yy.c
+*.swp
+test/combo/*.s
+test/feature/*.s
+test/old/*.s
+a.out
+obj/

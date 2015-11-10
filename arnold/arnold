@@ -1,0 +1,544 @@
+#!/usr/bin/python3
+
+import sys, os
+import shlex
+import hashlib
+import json
+import urllib.request
+import zipfile
+import time
+
+VERSION = (0, 2)
+MINECRAFT_RECOMMENDED = (1, 4, 7)
+MINECRAFT_ROOT = os.path.join(os.environ['HOME'], '.minecraft')
+LAUNCHER_PATH = os.path.join(MINECRAFT_ROOT, 'minecraft.jar')
+MODS_AVAILABLE_ROOT = os.path.join(MINECRAFT_ROOT, 'mods-available')
+PROFILES_ROOT = os.path.join(MINECRAFT_ROOT, 'profiles')
+
+def v2str(version, sep='.'):
+    if version is None:
+        return '--'
+    return sep.join([str(x) for x in version])
+def str2v(version, sep='.'):
+    return tuple([int(x) for x in version.split(sep)])
+def v2int(version, n=4):
+    if version is None:
+        return None
+    x = 0
+    for i in range(len(version)):
+        if version[i] > 256:
+            log.warn(v2str(version) + " has component greater than 256!")
+        x += version[i] << (16 * (n-i-1))
+    return x
+
+def checksum(m, fname):
+    f = open(fname, 'rb')
+    while True:
+        s = f.read(4096)
+        if len(s) == 0:
+            break
+        m.update(s)
+    return m.hexdigest()
+
+def md5sum(fname):
+    return checksum(hashlib.md5(), fname)
+def sha1sum(fname):
+    return checksum(hashlib.sha1(), fname)
+
+def curl_print(name, cur, total=0):
+    if total <= 0:
+        s = '{:.1f} kbytes'.format(cur/1024)
+    else:
+        s = '{:5.1f}% ({:.1f}/{:.1f} kbytes)'.format(100*cur/total, cur/1024, total/1024)
+    s = name + '  ' + s
+    sys.stdout.write('\x1b[0G' + s)
+
+def curl(src, outname):
+    fout = open(outname, 'wb')
+    fin = urllib.request.urlopen(src)
+    name = os.path.basename(outname)
+    cur = 0
+    total = int(fin.info().get('content-length', 0))
+    while True:
+        s = fin.read(256)
+        if len(s) == 0:
+            break
+        fout.write(s)
+        cur += len(s)
+        curl_print(name, cur, total)
+    fin.close()
+    fout.close()
+    sys.stdout.write('\n')
+
+def mkdir_p(n):
+    if n == '':
+        die('mkdir_p broke')
+
+    if not os.path.exists(n):
+        mkdir_p(os.path.dirname(n))
+        os.mkdir(n)
+    elif not os.path.isdir(n):
+        die(n + ' already exists and is not a directory!')
+
+class ZipSource:
+    def __init__(self, fname):
+        self.fname = fname
+        self.name = os.path.basename(fname)
+        if not zipfile.is_zipfile(fname):
+            die(fname + ' is not a zip file')
+        self.zf = zipfile.ZipFile(fname, 'r')
+        self.files = self.zf.namelist()
+    def __del__(self):
+        self.zf.close()
+    def send_to(self, name, zf):
+        s = self.zf.read(name)
+        n = len(s)
+        zf.writestr(name, s)
+        return n
+
+class ZipPatcher:
+    def __init__(self):
+        self.fnames = []
+        self.files = {}
+    def patch(self, src):
+        if src.fname in self.fnames:
+            log.warn('ZipPatcher skipping {} (already in fname list)'.format(src.fname))
+            return
+        log.noisy('Adding {} to ZipPatcher list'.format(src.fname))
+        self.fnames.append(src.fname)
+        for n in src.files:
+            self.files[n] = src
+    def output(self, fname):
+        count = 0
+        byte = 0
+        log.noisy('ZipPatcher output to ' + fname)
+        if fname in self.fnames:
+            log.warn('ZipPatcher output is an input! Weirdness is likely')
+        zf = zipfile.ZipFile(fname, 'w')
+        for n in self.files.keys():
+            if n.startswith('META-INF/'):
+                continue
+            byte += self.files[n].send_to(n, zf)
+            count += 1
+        log.noisy('Wrote {} files totaling {:.1f} kbytes (uncompressed)'.format(count, byte/1024))
+        zf.close()
+
+class Log:
+    def __init__(self, level=-1, name='Arnold'):
+        self.level = level
+        self.name = name
+        self.prefix = [ 'ERR', 'WRN', 'INF', 'DBG', '   ' ]
+    def log(self, level, msg):
+        prefix = self.prefix[-1]
+        if len(self.prefix) > level:
+            prefix = self.prefix[level]
+        # to match Forge log
+        t = time.strftime('%Y-%m-%d %H:%M:%S')
+        line = '{} [{}] [{}] {}'.format(t, prefix, self.name, msg)
+        if level <= self.level or self.level < 0:
+            print(line)
+
+    def noisy(self, msg):
+        self.log(4, msg)
+    def debug(self, msg):
+        self.log(3, msg)
+    def info(self, msg):
+        self.log(2, msg)
+    def warn(self, msg):
+        self.log(1, msg)
+    def error(self, msg):
+        self.log(0, msg)
+
+class ModEntry:
+    def __init__(self, info, entry):
+        self.info = info
+        self.entry = entry
+        self.extras = {
+            'links': self.extra_links
+        }
+
+    def download(self):
+        log.debug('Checking ' + self.get_name())
+
+        if os.path.exists(self.get_fname()):
+            if os.path.isfile(self.get_fname()):
+                log.noisy('Already have ' + self.get_fname())
+                return
+            die(self.get_fname() + ' exists, but is not a regular file, wtf...')
+
+        if not 'url' in self.entry:
+            die('Cannot download ' + self.get_name())
+
+        log.info('Downloading ' + self.get_name())
+        log.noisy('url=' + self.entry['url'])
+        curl(self.entry['url'], self.get_fname())
+
+    def checksum(self):
+        ref, calc = '', ''
+
+        log.debug('Verifying ' + self.get_name())
+
+        if 'sha1' in self.entry:
+            log.noisy('  SHA-1')
+            ref = self.entry['sha1']
+            calc = sha1sum(self.get_fname())
+        elif 'md5' in self.entry:
+            log.noisy('  MD5')
+            ref = self.entry['md5']
+            calc = md5sum(self.get_fname())
+        else:
+            #log.warn('{} un-verified'.format(self.get_name()))
+            log.info('{} has no checksum. Leaving unverified'.format(self.get_name()))
+            return True
+
+        log.noisy('  ref =' + ref)
+        log.noisy('  calc=' + calc)
+
+        if ref != calc:
+            die('{} has a bad checksum!'.format(self.get_name()))
+
+    def do_extras(self, profile):
+        if not 'extra' in self.entry:
+            return
+
+        for extra in self.entry['extra']:
+            if not extra in self.extras:
+                die('{} has unknown extra "{}"'.format(self.get_name(), extra))
+            self.extras[extra](profile, self.entry['extra'][extra])
+
+    def extra_links(self, profile, data):
+        if type(data) != list:
+            die('"links" extra requires list data')
+        if len(data) % 2 != 0:
+            log.warn('"links" extra should have an even number of arguments')
+
+        for sf, dd in zip(data[::2], data[1::2]):
+            src = os.path.join(self.info.root, sf)
+            dirname = os.path.join(MINECRAFT_ROOT, dd)
+            profile.link(src, dirname)
+
+    def get_fname(self):
+        # always prefer 'file' over 'url'
+        if 'file' in self.entry:
+            s = self.entry['file']
+        else:
+            # .jar covers both jar and zip. Most mods (if not all)
+            # are distributed as a .jar or .zip, even jar mods.
+            s = self.info.name + '_' + self.entry['minecraft'] + '.jar'
+        return os.path.join(self.info.root, s)
+
+    def get_name(self):
+        s = self.info.get_name()
+        if 'version' in self.entry:
+            s += ' ' + str(self.entry['version'])
+        return s
+
+class ModInfo:
+    def __init__(self, name):
+        self.name = name
+        self.entry = None
+        self.info = {}
+        self.root = os.path.join(MODS_AVAILABLE_ROOT, self.name)
+        self.fname = os.path.join(self.root, 'mod.json')
+
+        if not os.path.exists(self.root) or not os.path.isdir(self.root):
+            die('No such mod "{}"'.format(self.name))
+        if not os.path.isfile(self.fname):
+            die('Mod "{}" has no mod.json file'.format(self.name))
+
+        self.load_info(self.fname)
+        self.validate()
+
+    def load_info(self, fname):
+        log.noisy('Loading {} info from {}'.format(self.get_name(), fname))
+        f = open(fname)
+        try:
+            self.info = json.load(f)
+        except ValueError:
+            die('Could not parse mod.json for ' + self.get_name())
+        f.close()
+
+    def validate(self):
+        # maybe I should learn JSON schema...
+
+        name = self.name + '/mod.json'
+
+        if 'type' not in self.info:
+            die(name + ' indicates no mod type!')
+        if type(self.info['type']) != str:
+            die(name + ' type is not a string, wtf')
+
+        if 'files' not in self.info:
+            die(name + ' has no files list')
+        if type(self.info['files']) != list:
+            die(name + ' "files" is not a list')
+
+        for entry in self.info['files']:
+            if type(entry) != dict:
+                die(name + ' files list has non-dict entry')
+            if 'url' not in entry and 'file' not in entry:
+                die(name + ' files list entry missing "url" or "file" item')
+            if 'minecraft' not in entry:
+                die(name + ' files list entry missing "minecraft" item')
+
+    def str2v(self, ver):
+        s = ver.split('-')
+        if len(s) == 1:
+            return str2v(s[0]), str2v(s[0])
+        elif len(s) == 2:
+            return str2v(s[0]), str2v(s[1])
+        else:
+            die('Bad Minecraft version spec: ' + ver)
+
+    def find_entry(self, mcver):
+        mcver = v2int(mcver)
+        for entry in self.info['files']:
+            vmin, vmax = self.str2v(entry['minecraft'])
+            vmin, vmax = v2int(vmin), v2int(vmax)
+            if vmin <= mcver and mcver <= vmax:
+                return entry
+        return None
+
+    def get_entry(self, mcver):
+        entry = self.find_entry(mcver)
+        return None if entry is None else ModEntry(self, entry)
+
+    def select_entry(self, mcver):
+        self.entry = self.get_entry(mcver)
+        return self.entry is not None
+
+    def get_name(self):
+        if 'name' in self.info:
+            return str(self.info['name'])
+        return self.name
+
+class ConfigReader:
+    def __init__(self, cb):
+        self.reading = False
+        self.cb = cb
+
+    def read(self, fname):
+        if self.reading:
+            die('Recursive invocation of ConfigReader.read')
+        self.fname = fname
+        self.linenum = 0
+        f = open(fname, 'r')
+        self.reading = True
+        for line in f:
+            self.linenum = self.linenum + 1
+            s = shlex.split(line, True)
+            if len(s) > 0:
+                self.cb(self, s)
+        f.close()
+        self.reading = False
+
+    def warn(self, msg):
+        global log
+        log.warn(msg + ' at {}:{}'.format(self.fname, self.linenum))
+
+class Profile:
+    def __init__(self, name):
+        self.commands = {
+            'loadmod': (self.cmd_loadmod, 1),
+            'minecraft': (self.cmd_minecraft, 1),
+            'extends': (self.cmd_extends, 1),
+            'useconfig': (self.cmd_useconfig, 1),
+            'usesaves': (self.cmd_usesaves, 1),
+            'name': (self.cmd_name, 1),
+        }
+        self.minecraft = MINECRAFT_RECOMMENDED
+        self.useconfig = 'default'
+        self.usesaves = name
+        self.name = name
+        self.displayname = name
+        self.launchopts = ['-Xmx768m', '-Xms768m']
+        self.mods = []
+
+        self.load_config(self.name)
+
+    def load_config(self, name):
+        root = os.path.join(PROFILES_ROOT, name)
+        if not os.path.isdir(root):
+            die(root + ' is not a directory.')
+        configname = os.path.join(root, 'profile.conf')
+        if not os.path.isfile(configname):
+            die(configname + ' does not exist (or is not a regular file)')
+
+        log.noisy('Loading {} config from {}'.format(self.displayname, configname))
+        ConfigReader(self.config_cb).read(configname)
+
+    def config_cb(self, reader, parv):
+        if not parv[0] in self.commands:
+            reader.warn('Unknown command ' + parv[0])
+            return
+        cb, parc = self.commands[parv[0]]
+        if parc >= 0:
+            if len(parv) < parc + 1:
+                reader.warn('Not enough arguments to ' + parv[0])
+                return
+            if len(parv) > parc + 1:
+                reader.warn('Extra arguments to ' + parv[0])
+        cb(reader, parv)
+
+    def cmd_loadmod(self, reader, parv):
+        for mod in self.mods:
+            if parv[1] == mod.name:
+                return
+        # we want to preserve ordering
+        log.noisy('Adding {} to mod list'.format(parv[1]))
+        self.mods.append(ModInfo(parv[1]))
+
+    def cmd_minecraft(self, reader, parv):
+        self.minecraft = str2v(parv[1])
+        if len(self.minecraft) != 3:
+            reader.warn('Probably a bad version number')
+
+    def cmd_extends(self, reader, parv):
+        self.load_config(parv[1])
+
+    def cmd_useconfig(self, reader, parv):
+        self.useconfig = parv[1]
+
+    def cmd_usesaves(self, reader, parv):
+        self.usesaves = parv[1]
+
+    def cmd_name(self, reader, parv):
+        self.displayname = parv[1]
+
+    ###
+
+    def load(self):
+        log.info('Loading ' + self.displayname + ' for Minecraft ' + v2str(self.minecraft))
+
+        dir_bin = os.path.join(MINECRAFT_ROOT, 'bin')
+        dir_coremods = os.path.join(MINECRAFT_ROOT, 'coremods')
+        dir_mods = os.path.join(MINECRAFT_ROOT, 'mods')
+        mkdir_p(dir_bin)
+        mkdir_p(dir_coremods)
+        mkdir_p(dir_mods)
+
+        # clean coremods/ and mods/
+
+        log.debug('Cleaning coremods and mods')
+        self.clean_dir(dir_coremods)
+        self.clean_dir(dir_mods)
+
+        # select entries
+
+        for mod in self.mods:
+            if not mod.select_entry(self.minecraft):
+                die('Cannot get ' + mod.get_name() + ' for Minecraft ' + v2str(self.minecraft))
+
+        # check minecraft
+
+        mc_url = 'http://assets.minecraft.net/' + v2str(self.minecraft, '_') + '/minecraft.jar'
+        mc_clean = os.path.join(dir_bin, 'minecraft_' + v2str(self.minecraft) + '.jar')
+        mc = os.path.join(dir_bin, 'minecraft.jar')
+
+        log.debug('Checking clean minecraft.jar')
+        if not os.path.exists(mc_clean):
+            log.info('Downloading clean minecraft.jar for Minecraft ' + v2str(self.minecraft))
+            curl(mc_url, mc_clean)
+        elif not os.path.isfile(mc_clean):
+            die(mc_clean + ' already exists, but is not a regular file')
+
+        # check mods
+
+        log.debug('Checking all mods')
+        for mod in self.mods:
+            mod.entry.download()
+            mod.entry.checksum()
+
+        # load jar mods
+
+        log.debug('Loading jar mods')
+        zp = ZipPatcher()
+        zp.patch(ZipSource(mc_clean))
+        for mod in self.mods:
+            if mod.info['type'].lower() == 'jar':
+                log.info('Loading ' + mod.entry.get_name() + ' (jar mod)')
+                zp.patch(ZipSource(mod.entry.get_fname()))
+        log.debug('Writing ' + os.path.basename(mc))
+        zp.output(mc)
+
+        # load forge mods
+
+        log.debug('Loading Forge mods')
+        for mod in self.mods:
+            typ = mod.info['type'].lower()
+            if typ == 'core':
+                log.info('Loading ' + mod.entry.get_name() + ' (core mod)')
+                self.link(mod.entry.get_fname(), dir_coremods)
+            elif typ == 'forge':
+                log.info('Loading ' + mod.entry.get_name() + ' (forge mod)')
+                self.link(mod.entry.get_fname(), dir_mods)
+
+        # processing mod extras
+
+        log.debug('Processing mod extras')
+        for mod in self.mods:
+            mod.entry.do_extras(self)
+
+        # link config/ and saves/
+
+        log.debug('Linking config/ and saves/')
+        dir_config = os.path.join(PROFILES_ROOT, self.useconfig, 'config')
+        dir_saves = os.path.join(PROFILES_ROOT, self.usesaves, 'saves')
+        if not os.path.isdir(dir_config):
+            log.warn(dir_config + ' does not exist. Creating')
+            mkdir_p(dir_config)
+        if not os.path.isdir(dir_saves):
+            log.warn(dir_saves + ' does not exist. Creating')
+            mkdir_p(dir_saves)
+        self.link(dir_config, MINECRAFT_ROOT)
+        self.link(dir_saves, MINECRAFT_ROOT)
+
+        # start launcher
+
+        log.info('Starting launcher')
+        self.run(['java'] + self.launchopts + ['-jar', LAUNCHER_PATH])
+
+    def clean_dir(self, dirname):
+        bn = os.path.basename(dirname)
+        for fname in os.listdir(dirname):
+            n = os.path.join(dirname, fname)
+            # this will always warn on windows, unfortunately :/
+            if not os.path.islink(n):
+                if os.path.isdir(n): # I guess there could be other things n is...
+                    die('Cannot delete directory ' + bn + '/' + fname)
+                log.warn('Deleting non-link ' + bn + '/' + fname)
+            os.unlink(n)
+
+    def link(self, src, dirname):
+        dst = os.path.join(dirname, os.path.basename(src))
+        # disregard windows, get money
+        if os.path.islink(dst):
+            log.noisy('Overwriting {}'.format(dst))
+            os.unlink(dst)
+        elif os.path.exists(dst):
+            die(dst + ' is not a link! Refusing to delete')
+        log.noisy('Link {} -> {}'.format(dst, src))
+        os.symlink(src, dst)
+
+    def run(self, argv):
+        os.execvp(argv[0], argv)
+
+def usage(argv0):
+    print('Usage: ' + argv0 + ' PROFILE')
+
+def die(msg):
+    log.error('CRITICAL! ' + msg)
+    sys.exit(1)
+
+log = Log(3)
+log.debug('Opened log')
+
+if __name__ == '__main__':
+    if len(sys.argv) > 2:
+        usage(sys.argv[0])
+        sys.exit(0)
+    profilename = 'default' if len(sys.argv) < 2 else sys.argv[1]
+
+    log.info('Starting Arnold ' + v2str(VERSION))
+    profile = Profile(profilename)
+    profile.load()

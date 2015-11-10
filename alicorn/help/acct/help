@@ -1,0 +1,5 @@
+Usage: ACCT HELP [<command>]
+
+View a list of available ACCT subcommands. If
+<command> is provided then more detailed help
+for the command is provided.

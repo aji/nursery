@@ -1,0 +1,19 @@
+[Unit]
+Description=bob daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/tmux new '/usr/bin/weechat -d /opt/bob/weechat'
+Restart=on-abnormal
+WorkingDirectory=/opt/bob
+User=bob
+Group=bob
+StandardInput=tty
+StandardOutput=tty
+StandardError=tty
+TTYPath=/dev/tty2
+TTYVHangup=yes
+
+[Install]
+WantedBy=multi-user.target

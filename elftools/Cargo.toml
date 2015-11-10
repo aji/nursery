@@ -1,0 +1,13 @@
+[package]
+name = "elftools"
+version = "0.0.1"
+authors = ["Alex Iadicicco <alex@ajitek.net>"]
+
+[lib]
+name = "elftools"
+path = "src/lib.rs"
+
+[[bin]]
+name = "elfdump"
+path = "src/bin/elfdump.rs"
+doc = false

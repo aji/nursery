@@ -1,0 +1,39 @@
+#!/usr/bin/python3
+#
+# Usage: mkmod MC TYPE NAME ZIP
+#   MC    The Minecraft version
+#   TYPE  The type of mod (forge/jar/core)
+#   NAME  The name of the mod (will be the directory in mods-available/)
+#   ZIP   The .zip file for the mod
+#
+# This is an example of quick-and-dirty python. Although Arnold is rather
+# quick-and-dirty, it is well-organized in comparison to this turd pile
+
+import sys, os
+import json
+
+def die(s):
+    print(s)
+    sys.exit(1)
+
+MINECRAFT_ROOT = os.path.join(os.environ['HOME'], '.minecraft')
+MODS_AVAILABLE_ROOT = os.path.join(MINECRAFT_ROOT, 'mods-available')
+
+mc, typ, name, zfname = sys.argv[1:]
+zfbase = os.path.basename(zfname)
+root = os.path.join(MODS_AVAILABLE_ROOT, name)
+
+if not os.path.exists(root):
+    os.mkdir(root)
+elif not os.path.isdir(root):
+    die(root + ' is not a directory')
+
+with open(os.path.join(root, 'mod.json'), 'w') as f:
+    json.dump({
+        'name':name,
+        'type':typ,
+        'files':[{'minecraft':mc, 'file':zfbase}]
+    }, f, indent=2)
+    f.write('\n')
+
+os.rename(zfname, os.path.join(root, zfbase))

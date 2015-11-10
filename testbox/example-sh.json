@@ -1,0 +1,20 @@
+{
+  "run": ["/bin/sh", "-c"],
+  "output": "stdout",
+
+  "tests": {
+    "echo1":      [["echo"],                  "", "\n"              ],
+    "echo2":      [["echo hello"],            "", "hello\n"         ],
+    "echo3":      [["echo foo  bar"],         "", "foo bar\n"       ],
+    "echo4":      [["echo -n hello"],         "", "hello"           ],
+    "echo5":      [["echo -e foo\\\\nbar"],   "", "foo\nbar\n"      ],
+
+    "condition1": [["true && echo x"],        "", "x\n"             ],
+    "condition2": [["true || echo x"],        "", ""                ],
+    "condition3": [["false && echo x"],       "", ""                ],
+    "condition4": [["false || echo x"],       "", "x\n"             ],
+
+    "var1":       [["echo $novar"],           "", "\n"              ],
+    "var2":       [["var=x; echo $var"],      "", "x\n"             ]
+  }
+}

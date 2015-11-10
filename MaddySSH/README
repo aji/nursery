@@ -1,0 +1,15 @@
+
+
+                           MADDY'S SECURE SHELL
+                              Alex Iadicicco
+
+    This thing was created for a very particular purpose that I doubt
+    anybody else really has trouble with. Use OpenSSH or something. I
+    can guarantee that that's probably better than whatever Maddy's
+    Secure Shell has to offer.
+
+    Unless what you need is to compile on very old BSD systems that only
+    implement the commonest of C functionality, then yes, MaddySSH is
+    probably what you're looking for.
+
+

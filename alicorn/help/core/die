@@ -1,0 +1,3 @@
+Shuts down the bouncer immediately. This has the
+same effect as issuing a SIGINT or SIGTERM. This
+command takes no arguments.

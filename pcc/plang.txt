@@ -1,0 +1,33 @@
+
+
+
+
+                       THE P LANGUAGE SPECIFICATION
+                               REVISION P1
+
+                        (C) 2013 ALEX J IADICICCO
+
+
+
+GOALS
+
+  o  Lots of backwards compatibility with C. Projects with combined C
+     and P source should be not only possible but encouraged, until P
+     implementations are mature enough to compete with C.
+
+  o  Redesign confusing concepts from C, such as pointers and signedness,
+     to be less error prone and more beginner-friendly.
+
+  o  Introduce new concepts that gloss over common design patterns in
+     C. For example, opaque data and callback pairs can be replaced
+     with closures.
+
+
+THE TYPE SYSTEM
+
+  P is a structurally, statically typed language.
+
+
+EXPRESSIONS
+
+  

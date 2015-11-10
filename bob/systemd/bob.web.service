@@ -1,0 +1,14 @@
+[Unit]
+Description=bob website
+After=nginx.service
+
+[Service]
+ExecStart=/opt/bob/run/scripts/uwsgi.sh
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

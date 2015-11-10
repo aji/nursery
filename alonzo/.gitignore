@@ -1,0 +1,5 @@
+alonzo
+misc/
+*.o
+*.swp
+aliases.db

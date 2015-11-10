@@ -1,0 +1,142 @@
+#!/usr/bin/python3
+# Mod management system for Arnold
+
+import sys, os
+
+VERSION = (0, 2)
+MINECRAFT_ROOT = os.path.join(os.environ['HOME'], '.minecraft')
+MODS_AVAILABLE_ROOT = os.path.join(MINECRAFT_ROOT, 'mods-available')
+
+def wrap(s, wide=70):
+    lines = ['']
+    for word in s.split():
+        if len(lines[-1]) + len(word) > wide:
+            lines.append('')
+        lines[-1] += word + ' '
+    return lines
+
+def cmd_create(name, typ):
+    pass
+
+def cmd_delete(name):
+    pass
+
+def cmd_rename(oldname, newname):
+    pass
+
+def cmd_fullname(name, fullname):
+    pass
+
+def cmd_settype(name, typ):
+    pass
+
+def cmd_setfile(name, mc, fname):
+    pass
+
+def cmd_seturl(name, mc, url):
+    pass
+
+def cmd_download(*parv):
+    pass
+
+def cmd_checksum(*parv):
+    pass
+
+def cmd_import(mc, typ, name, fname):
+    cmd_create(name, typ)
+    cmd_setfile(name, mc, fname)
+    cmd_checksum(name, mc)
+
+def cmd_help(*parv):
+    if len(parv) == 0:
+        print('Help for all commands:\n')
+        for cmd in sorted(commands.keys()):
+            list_command(cmd)
+    else:
+        list_command(parv[0])
+
+commands = {
+    'create': (cmd_create, 2, 'NAME TYPE',
+        'Creates a new mod entry if it doesn\'t already exist'),
+    'delete': (cmd_delete, 1, 'NAME',
+        'Deletes the specified mod'),
+    'rename': (cmd_rename, 2, 'OLDNAME NEWNAME',
+        'Renames a mod. Note, this will break any profiles that use the old name'),
+    'fullname': (cmd_fullname, 2, 'NAME FULLNAME',
+        'Sets the full name of the mod (used for display purposes)'),
+    'settype': (cmd_settype, 2, 'NAME TYPE',
+        'Sets the type of a mod. TYPE is one of "jar", "core", or "forge"'),
+    'setfile': (cmd_setfile, 3, 'NAME MINECRAFT FILE',
+        'Sets the file for a particular Minecraft version. The old file is ' +
+        'not deleted (if it has a different name). The new file is moved. ' +
+        'THIS DOES NOT AUTOMATICALLY UPDATE ANY CHECKSUMS!'),
+    'seturl': (cmd_seturl, 3, 'NAME MINECRAFT URL',
+        'Sets the URL for a particular Minecraft version. THIS DOES NOT ' +
+        'AUTOMATICALLY PERFORM ANY DOWNLOADS OR UPDATE ANY CHECKSUMS!'),
+    'download': (cmd_download, (1,2), 'NAME [MINECRAFT]',
+        'Downloads a mod for a particular Minecraft version, or for all ' +
+        'Minecraft versions (if omitted). If no URL exists for a Minecraft ' +
+        'version, that version is skipped.'),
+    'checksum': (cmd_checksum, (1,2), 'NAME [MINECRAFT]',
+        'Calculates checksums for a particular Minecraft version, or for ' +
+        'all Minecraft versions (if omitted). If no file exists for a Minecraft ' +
+        'version, that version is skipped.'),
+    'import': (cmd_import, 4, 'MINECRAFT TYPE NAME FILE',
+        'Performs "create" followed by "setfile" and "checksum"'),
+    'help': (cmd_help, (0,1), '[COMMAND]',
+        'Display the help for a particular command, or all commands if omitted'),
+}
+
+def list_command(cmd):
+    cmd = cmd.lower()
+    if not cmd in commands:
+        print('No such command "{}"'.format(cmd))
+
+    fn, plim, args, doc = commands[cmd]
+
+    print('{} {}'.format(cmd, args))
+    for line in wrap(doc):
+        print('  ' + line)
+
+def list_commands():
+    print('Commands:')
+    for cmd in sorted(commands.keys()):
+        print('  {} {}'.format(cmd, commands[cmd][2]))
+    print('')
+    print('Use help COMMAND for more information on a command')
+
+def dispatch(cmd, parv):
+    cmd = cmd.lower()
+
+    if not cmd in commands:
+        print('No such command "{}"\n'.format(cmd))
+        list_commands()
+        return
+
+    fn, plim, args, doc = commands[cmd]
+
+    pmin, pmax = plim, plim
+    if type(plim) == tuple:
+        pmin, pmax = plim
+
+    if plim != -1:
+        if len(parv) < pmin:
+            print('Not enough arguments to ' + cmd + '\n')
+            list_command(cmd)
+            return
+
+        if len(parv) > pmax:
+            print('Warning: extra arguments to ' + cmd)
+
+    fn(*parv)
+
+def usage(argv0):
+    print('Usage: {} COMMAND [ARGS...]'.format(argv0))
+    list_commands()
+
+if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        usage(sys.argv[0])
+        sys.exit(1)
+
+    dispatch(sys.argv[1], sys.argv[2:])

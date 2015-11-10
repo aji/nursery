@@ -1,0 +1,4 @@
+Usage: ACCT ADD <name> <password>
+
+Adds a new user account identified by the given
+name and password.

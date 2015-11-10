@@ -1,0 +1,5 @@
+#!/bin/sh
+
+PYTHONPATH=/opt/bob/run:$PYTHONPATH \
+STAGE=prod \
+exec python -m bob.tool "$@"
