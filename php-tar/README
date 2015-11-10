@@ -1,0 +1,9 @@
+
+				    php-tar
+			       by Alex Iadicicco
+
+INTRODUCTION
+      This is a PHP class created to assist manipulation of .tar
+      and .tar.gz files from within PHP. The goal is to be speedy an
+      lightweight. I'm aware that such a thing already exists. I felt
+      like this would be a simple, refreshing, and useful exercise.
