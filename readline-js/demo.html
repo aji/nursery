@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <title>JS Readline Demo</title>
+    <style>
+      #output {
+        font-family: monospace;
+        font-size: 18pt;
+        }
+      #entry {
+        font-family: monospace;
+        font-size: 18pt;
+        color: #999;
+        padding: 10px;
+        background-color: #000;
+        white-space: pre;
+        }
+      #entry .prompt {
+        color: #fff;
+        }
+      #entry .cursor {
+        background-color: #f00;
+	border-bottom: 3px solid #f00;
+        color: #800;
+        }
+      #entry .ctrl {
+	border-bottom: 3px solid #ff0;
+        }
+    </style>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+    <script src="readline.js"></script>
+    <script type="text/javascript">
+      $(function() {
+        $("#entry").readline('myprompt> ', function(line) {
+          $('<div/>').text(line).appendTo($('#output'));
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="output"></div>
+    <div id="entry"></div>
+  </body>
+</html>
